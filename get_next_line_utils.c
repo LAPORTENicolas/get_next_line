@@ -10,68 +10,65 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <stdlib.h>
-#include <stddef.h>
-#include <stdint.h>
 #include "get_next_line.h"
 
-unsigned int	ft_strlcpy(char *dest, const char *src, unsigned int size)
+void	clear_buffer(t_file *file)
 {
-	unsigned int	i;
-
-	if (size <= 0)
-		return (ft_strlen((char *)src));
-	i = 0;
-	while (i < size - 1 && src[i])
-	{
-		dest[i] = src[i];
-		i++;
-	}
-	dest[i] = '\0';
-	return (ft_strlen((char *)src));
-}
-
-char	*ft_strjoin(const char *s1, const char *s2)
-{
-	char	*r;
-	unsigned int	s_s1;
-	unsigned int	s_s2;
-	unsigned int	i;
-
-	if (s1 == NULL || s2 == NULL)
-		return (NULL);
-	s_s1 = ft_strlen((char *)s1);
-	s_s2 = ft_strlen((char *)s2);
-	i = 0;
-	r = malloc(sizeof(char) * (s_s1 + s_s2 + 1));
-	if (r == NULL)
-		return (NULL);
-	while (i < s_s1)
-		r[i++] = *s1++;
-	while (i < s_s1 + s_s2)
-		r[i++] = *s2++;
-	r[i] = '\0';
-	return (r);
-}
-
-int	ft_getendline(char *s)
-{
-	unsigned int i;
+	int	i;
 
 	i = 0;
-	while (s[i] && s[i] != '\n')
-		i++;	
-	return (i);
+	while (i <= BUFFER_SIZE)
+		file->buf[i++] = '\0';
+	file->index = 0;
 }
 
-unsigned int	ft_strlen(char *s)
+void	clear_file(t_file *file)
 {
-	unsigned int i;
+	clear_buffer(file);
+	file->fd = 0;
+	file->init = 0;
+	file->line = NULL;
+	file->status = 0;
+	file->index = 0;
+}
+
+void	init_file(t_file *file, int fd)
+{
+	file->fd = fd;
+	file->init = 1;
+	file->line = NULL;
+	clear_buffer(file);
+	file->status = read(fd, file->buf, BUFFER_SIZE);
+}
+
+int	ft_strlen(char *s, int endl)
+{
+	int	i;
 
 	if (s == NULL)
 		return (0);
 	i = 0;
-	while (s[i])
-		i++;
+	if (!endl)
+		while (s[i])
+			i++;
+	else
+		while (s[i] && s[i] != '\n')
+			i++;
 	return (i);
+}
+
+char	*ft_give_malloc(int linebreak, int size)
+{
+	char	*new;
+
+	if (linebreak)
+		new = malloc(sizeof(char) * (size + 2));
+	else
+		new = malloc(sizeof(char) * (size + 1));
+	if (new == NULL)
+		return (NULL);
+	if (linebreak)
+		new[size++] = '\n';
+	new[size] = '\0';
+	return (new);
 }

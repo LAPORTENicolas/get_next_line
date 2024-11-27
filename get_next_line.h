@@ -17,6 +17,11 @@
 #  define BUFFER_SIZE 2
 # endif
 
+# include <unistd.h>
+# include <stdlib.h>
+# include <stddef.h>
+# include <stdint.h>
+
 typedef struct s_file
 {
 	char	buf[BUFFER_SIZE + 1];
@@ -27,11 +32,14 @@ typedef struct s_file
 	int		index;
 }	t_file;
 
-char				*get_next_line(int fd);
-char				*ft_strjoin(const char *s1, const char *s2);
+void	init_file(t_file *file, int fd);
+void	clear_file(t_file *file);
+void	clear_buffer(t_file *file);
 
-unsigned int		ft_strlcpy(char *dest, const char *src, unsigned int size);
-unsigned int		ft_strlcat(char *dest, const char *src, unsigned int size);
+char	*get_next_line(int fd);
+char	*ft_give_malloc(int linebreak, int size);
+
 int		ft_getendline(char *s);
-unsigned int		ft_strlen(char *s);
+int		ft_strlen(char *s, int endl);
+
 #endif // !GET_NEXT_LINE_H
