@@ -20,8 +20,8 @@ void clear_buffer(t_file *file)
 	int i;
 
 	i = 0;
-	while (i < BUFFER_SIZE)
-		file->buf[i++] = 0;
+	while (i <= BUFFER_SIZE)
+		file->buf[i++] = '\0';
 }
 
 void clear_file(t_file *file)
@@ -41,6 +41,7 @@ void	init_file(t_file *file, int fd)
 	file->line = NULL;
 	clear_buffer(file);
 	file->status = read(fd, file->buf, BUFFER_SIZE);
+	printf("file buf = %s", file->buf);
 }
 
 void debug(t_file *file);
@@ -97,12 +98,6 @@ char	*next_line(t_file *file)
 {
 	char *tmp;
 	// Vérifie s'il reste du text sinon return NULL
-	if (file->buf[file->index] == 0)
-	{
-		clear_file(file);
-		return (NULL);
-	}
-	// Vérifie si fin du buffer de file
 	if (file->index == BUFFER_SIZE)
 	{
 		// Je remplis buffer avec la suite du fichier
@@ -113,7 +108,12 @@ char	*next_line(t_file *file)
 	}
 	// Vérifie les erreurs de lecture
 	if (file->status == -1)
+	{
+		if (file->line)
+			free(file->line);
+		clear_file(file);
 		return (NULL);
+	}
 	// Tant que pas a la fin de la ligne
 	// Copier dans line le contenue du buffer
 	//debug(file);
@@ -122,21 +122,26 @@ char	*next_line(t_file *file)
 		// J'apelle la fonction que copie de l'index ou je suis
 		// jusqu'a l'index de fin de ligne en concatenant avec line
 		realloc_char(file, 0);
-		if (file->index == BUFFER_SIZE)
+		if (file->index >= BUFFER_SIZE)
 		{
 			file->index = 0;
 			clear_buffer(file);
 			file->status = read(file->fd, file->buf, BUFFER_SIZE);
+			if (file->status == -1)
+			{
+				if (file->line)
+					free(file->line);
+				clear_file(file);
+				return (NULL);
+			}
 		} else if (file->buf[file->index] == '\n') {
 			realloc_char(file, 1);
 			file->index++;
 			break;
-		} else if (file->buf[BUFFER_SIZE - 1] == 0)
+		} else if (file->buf[BUFFER_SIZE - 1] == '\0')
 		{
-			realloc_char(file, 0);
-			tmp = file->line;
-			clear_file(file);
-			return tmp;
+			(void)tmp;
+			return (NULL);
 		}
 	}
 	/*
